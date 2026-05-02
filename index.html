@@ -179,7 +179,7 @@ function isTokenValid() {
 }
 
 function getRedirectUri() {
-  return window.location.href.split('?')[0].split('#')[0];
+  return window.location.origin;
 }
 
 // ─── GOOGLE AUTH ──────────────────────────────────────────────────────────────

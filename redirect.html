@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/><title>ReceiptVault</title></head>
+<body>
+<script>
+  // If there's an OAuth token in the hash, forward it to the app
+  if (window.location.hash && window.location.hash.includes('access_token')) {
+    window.location.href = '/My-Receipts/' + window.location.hash;
+  } else {
+    // Otherwise just go to the app
+    window.location.href = '/My-Receipts/';
+  }
+</script>
+</body>
+</html>
