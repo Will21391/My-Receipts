@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ReceiptVault" />
+  <title>ReceiptVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #080704; color: #c9b87a; font-family: 'DM Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: #080704; }
+    ::-webkit-scrollbar-thumb { background: #2a2518; border-radius: 2px; }
+    @keyframes bounce { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    .app { min-height: 100vh; max-width: 600px; margin: 0 auto; padding: 0 20px 80px; }
+    .header { padding-top: 32px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .logo { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 700; color: #e8d5a0; letter-spacing: -0.5px; }
+    .tagline { font-size: 11px; color: #3a3020; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+    .badge { display: flex; align-items: center; gap: 6px; background: #0e0d0a; border: 1px solid #1e1c14; border-radius: 20px; padding: 6px 12px; font-size: 11px; color: #4a6a4a; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #4a8a4a; }
+    .btn-signout { background: none; border: 1px solid #2a2518; border-radius: 20px; padding: 6px 12px; color: #4a4030; font-size: 11px; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-left: 8px; }
+    .btn-signout:hover { border-color: #a78845; color: #a78845; }
+
+    .tabs { display: flex; border-bottom: 1px solid #1a1810; margin-top: 22px; margin-bottom: 26px; }
+    .tab { padding: 10px 20px; border: none; background: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; color: #3a3020; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+    .tab.active { color: #e8d5a0; font-weight: 600; border-bottom-color: #a78845; }
+
+    /* Setup */
+    .setup { animation: fadeIn 0.3s ease; padding-top: 16px; }
+    .setup h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; color: #e8d5a0; margin-bottom: 8px; font-weight: 700; }
+    .setup p { color: #5a5040; font-size: 13px; line-height: 1.6; margin-bottom: 22px; }
+    .url-box { background: #0d0c09; border: 1px solid #a78845; border-radius: 10px; padding: 14px 16px; margin-bottom: 22px; }
+    .url-label { color: #a78845; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 8px; }
+    .url-value { color: #e8d5a0; font-size: 11px; font-family: monospace; word-break: break-all; background: #080704; padding: 8px 10px; border-radius: 6px; user-select: all; }
+    .copy-btn { margin-top: 8px; background: #1a1810; border: 1px solid #2a2518; border-radius: 6px; padding: 6px 12px; color: #a78845; font-size: 11px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .copy-btn:hover { background: #2a2518; }
+    .checklist { background: #0a0900; border: 1px solid #1e1c14; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+    .checklist-title { color: #6a5f3a; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
+    .checklist-item { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+    .step-num { min-width: 20px; height: 20px; background: #a78845; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #0a0900; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .step-text { color: #5a5040; font-size: 12px; line-height: 1.5; }
+    label.field-label { color: #6a5f3a; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px; }
+    input.field { width: 100%; padding: 12px 14px; background: #0a0900; border: 1px solid #2a2518; border-radius: 10px; color: #e8d5a0; font-size: 12px; font-family: monospace; outline: none; margin-bottom: 14px; }
+    input.field:focus { border-color: #a78845; }
+    .btn-primary { width: 100%; padding: 14px; background: #a78845; border: none; border-radius: 10px; color: #0a0900; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+    .btn-primary:hover { background: #c9a855; }
+    .btn-primary:disabled { background: #1e1c14; color: #3a3020; cursor: default; }
+    .btn-text { background: none; border: none; color: #3a3020; font-size: 12px; cursor: pointer; margin-top: 14px; font-family: 'DM Sans', sans-serif; }
+    .btn-text:hover { color: #a78845; }
+
+    /* Sign in screen */
+    .signin-screen { text-align: center; padding: 50px 0; animation: fadeIn 0.3s ease; }
+    .signin-icon { font-size: 44px; margin-bottom: 16px; }
+    .signin-title { color: #5a5040; font-size: 15px; margin-bottom: 6px; }
+    .signin-sub { color: #3a3020; font-size: 12px; margin-bottom: 6px; }
+    .signin-note { color: #2a2518; font-size: 11px; margin-bottom: 28px; }
+    .btn-signin { background: #a78845; border: none; border-radius: 12px; padding: 13px 36px; color: #0a0900; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .btn-signin:hover { background: #c9a855; }
+
+    /* Scan tab */
+    .scan-area { border: 2px dashed #1e1c14; border-radius: 16px; padding: 52px 24px; text-align: center; cursor: pointer; background: #0a0900; transition: all 0.2s; }
+    .scan-area:hover, .scan-area.drag { border-color: #a78845; background: #141000; }
+    .scan-icon { font-size: 40px; margin-bottom: 12px; }
+    .scan-title { color: #e8d5a0; font-size: 16px; font-family: 'Cormorant Garamond', serif; font-weight: 700; margin-bottom: 6px; }
+    .scan-sub { color: #3a3020; font-size: 12px; }
+    .processing-step { color: #5a5040; font-size: 13px; margin-bottom: 12px; }
+    .error-box { background: #0d0808; border: 1px solid #2a1010; border-radius: 10px; padding: 12px 16px; margin-top: 14px; color: #8a3030; font-size: 13px; }
+    .success-box { background: #080d08; border: 1px solid #1a2a1a; border-radius: 14px; padding: 40px 24px; text-align: center; animation: fadeIn 0.3s ease; }
+    .security-box { margin-top: 20px; background: #0a0900; border: 1px solid #1a1810; border-radius: 12px; padding: 16px 18px; }
+    .security-title { color: #6a5f3a; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+    .security-row { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid #0e0d0a; color: #4a4030; font-size: 12px; }
+
+    /* Loading dots */
+    .dots { display: inline-flex; gap: 5px; align-items: center; }
+    .dot-anim { width: 7px; height: 7px; border-radius: 50%; background: #a78845; animation: bounce 1.1s infinite ease-in-out; }
+
+    /* Library */
+    .search-input { width: 100%; padding: 12px 14px; background: #0a0900; border: 1px solid #1e1c14; border-radius: 10px; color: #c9b87a; font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; margin-bottom: 16px; }
+    .search-input:focus { border-color: #a78845; }
+    .empty-state { text-align: center; padding: 50px 0; color: #2a2518; }
+    .receipt-list { display: flex; flex-direction: column; gap: 10px; }
+    .receipt-card { background: #0e0d0a; border: 1px solid #1e1c14; border-radius: 12px; padding: 16px 18px; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.2s; }
+    .receipt-card:hover { border-color: #a78845; }
+    .card-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .card-store { color: #e8d5a0; font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 700; }
+    .card-date { color: #4a4030; font-size: 12px; margin-top: 2px; }
+    .card-total { color: #c9b87a; font-family: monospace; font-size: 15px; }
+    .warranty-badge { font-size: 10px; color: #a78845; background: #1a1500; border: 1px solid #2a2000; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
+    .card-items { color: #3a3020; font-size: 12px; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(5,4,2,0.93); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal { background: #0e0d0a; border: 1px solid #2a2518; border-radius: 18px; max-width: 540px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 26px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: #e8d5a0; font-weight: 700; }
+    .modal-close { background: none; border: none; color: #4a4030; cursor: pointer; font-size: 20px; line-height: 1; }
+    .modal-close:hover { color: #a78845; }
+    .modal-img { width: 100%; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1e1c14; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+    .meta-cell { background: #12110d; border-radius: 8px; padding: 10px 14px; }
+    .meta-label { color: #4a4030; font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; }
+    .meta-value { color: #c9b87a; font-family: monospace; margin-top: 4px; font-size: 13px; }
+    .warranty-box { background: #130f00; border: 1px solid #2a2000; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; }
+    .warranty-title { color: #a78845; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+    .warranty-item { color: #7a6030; font-size: 13px; padding: 5px 0; border-bottom: 1px solid #1e1800; }
+    .warranty-item:last-child { border-bottom: none; }
+    .items-title { color: #4a4030; font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 10px; }
+    .item-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #141208; color: #7a6f4a; font-size: 13px; }
+    .item-price { font-family: monospace; color: #5a5040; }
+    .drive-note { background: #0a0900; border: 1px solid #1a1810; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; color: #3a3020; font-size: 11px; }
+    .btn-delete { width: 100%; padding: 11px; background: #130808; border: 1px solid #2a1010; border-radius: 8px; color: #8a3030; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; }
+    .btn-delete:hover { background: #1a0a0a; border-color: #4a1010; }
+
+    code { background: #1a1810; padding: 1px 6px; border-radius: 4px; color: #a78845; font-size: 11px; }
+    .hidden { display: none; }
+    .text-center { text-align: center; }
+    .mt-16 { margin-top: 16px; }
+    .p-50 { padding: 50px 0; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="logo">ReceiptVault</div>
+      <div class="tagline">Warranty Archive · Google Drive</div>
+    </div>
+    <div id="header-actions"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs hidden" id="tabs">
+    <button class="tab active" onclick="switchTab('scan')" id="tab-scan">📷 Scan</button>
+    <button class="tab" onclick="switchTab('library')" id="tab-library">📁 Library</button>
+  </div>
+
+  <!-- Content -->
+  <div id="content"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModal()">
+  <div class="modal" id="modal-content" onclick="event.stopPropagation()"></div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const FOLDER_NAME = 'ReceiptVault';
+const K = { clientId: 'rv_client_id', folder: 'rv_folder_id', token: 'rv_token', exp: 'rv_token_exp' };
+
+let state = {
+  token: null,
+  folderId: null,
+  receipts: [],
+  tab: 'scan',
+  processing: false,
+  loadingReceipts: false,
+};
+
+const ls = {
+  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  del: k => { try { localStorage.removeItem(k); } catch {} },
+};
+
+function isTokenValid() {
+  const exp = ls.get(K.exp);
+  return exp ? Date.now() < parseInt(exp) - 60000 : false;
+}
+
+function getRedirectUri() {
+  return window.location.href.split('?')[0].split('#')[0];
+}
+
+// ─── GOOGLE AUTH ──────────────────────────────────────────────────────────────
+function signIn(clientId) {
+  if (!clientId) return;
+  ls.set(K.clientId, clientId);
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: getRedirectUri(),
+    response_type: 'token',
+    scope: DRIVE_SCOPE,
+    include_granted_scopes: 'true',
+  });
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+}
+
+function signOut() {
+  [K.token, K.exp, K.folder].forEach(k => ls.del(k));
+  state.token = null; state.folderId = null; state.receipts = [];
+  render();
+}
+
+// ─── DRIVE API ────────────────────────────────────────────────────────────────
+async function driveReq(url, opts = {}) {
+  const r = await fetch(url, { ...opts, headers: { Authorization: `Bearer ${state.token}`, ...(opts.headers || {}) } });
+  if (r.status === 401) throw new Error('AUTH_EXPIRED');
+  if (!r.ok) throw new Error(`Drive error ${r.status}`);
+  return r.json();
+}
+
+async function getOrCreateFolder() {
+  const q = `name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+  const res = await driveReq(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`);
+  if (res.files?.length > 0) return res.files[0].id;
+  const created = await driveReq('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: FOLDER_NAME, mimeType: 'application/vnd.google-apps.folder' }),
+  });
+  return created.id;
+}
+
+async function uploadFile(name, data, mimeType) {
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify({ name, parents: [state.folderId] })], { type: 'application/json' }));
+  form.append('file', new Blob([data], { type: mimeType }));
+  const r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', {
+    method: 'POST', headers: { Authorization: `Bearer ${state.token}` }, body: form,
+  });
+  if (!r.ok) throw new Error('Upload failed');
+  return r.json();
+}
+
+async function loadReceipts() {
+  if (!state.token || !state.folderId) return;
+  state.loadingReceipts = true; renderLibrary();
+  try {
+    const q = `'${state.folderId}' in parents and name contains '_meta.json' and trashed=false`;
+    const res = await driveReq(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,createdTime)&orderBy=createdTime desc&pageSize=100`);
+    const metas = await Promise.all((res.files || []).map(async f => {
+      try {
+        const r = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`, { headers: { Authorization: `Bearer ${state.token}` } });
+        const meta = await r.json();
+        return { metaFileId: f.id, imageFileId: meta.imageFileId, meta };
+      } catch { return null; }
+    }));
+    state.receipts = metas.filter(Boolean);
+  } catch (e) { showError('Failed to load receipts from Drive.'); }
+  state.loadingReceipts = false; renderLibrary();
+}
+
+async function deleteReceipt(metaId, imgId) {
+  try {
+    await Promise.all([
+      fetch(`https://www.googleapis.com/drive/v3/files/${metaId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${state.token}` } }),
+      fetch(`https://www.googleapis.com/drive/v3/files/${imgId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${state.token}` } }),
+    ]);
+    state.receipts = state.receipts.filter(r => r.metaFileId !== metaId);
+    closeModal(); renderLibrary();
+  } catch { showError('Delete failed.'); }
+}
+
+// ─── AI EXTRACTION ────────────────────────────────────────────────────────────
+async function extractReceiptInfo(base64, mediaType) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+        { type: 'text', text: 'Analyze this receipt. Respond ONLY with valid JSON, no markdown:\n{"store":"merchant name","date":"YYYY-MM-DD or null","total":"total with symbol or null","items":[{"name":"item","price":"price","category":"Electronics/Appliance/Clothing/Food/Other"}],"warranty_relevant":true,"warranty_items":["items with warranty"],"receipt_number":"# or null","payment_method":"method or null","notes":"warranty notes"}' }
+      ]}],
+    }),
+  });
+  const data = await res.json();
+  return JSON.parse((data.content?.[0]?.text || '{}').replace(/```json|```/g, '').trim());
+}
+
+// ─── FILE PROCESSING ──────────────────────────────────────────────────────────
+async function processFile(file) {
+  if (!file?.type.startsWith('image/')) { showError('Please upload an image file.'); return; }
+  state.processing = true; renderScan();
+  try {
+    setStep('Reading image…');
+    const base64 = await new Promise((res, rej) => {
+      const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(file);
+    });
+    setStep('AI analyzing receipt…');
+    const info = await extractReceiptInfo(base64, file.type);
+    setStep('Uploading image to Google Drive…');
+    const ts = Date.now();
+    const ext = file.name.split('.').pop() || 'jpg';
+    const imgBuf = await file.arrayBuffer();
+    const imgFile = await uploadFile(`receipt_${ts}.${ext}`, imgBuf, file.type);
+    setStep('Saving receipt data…');
+    const meta = { info, imageFileId: imgFile.id, uploadedAt: ts, fileName: file.name };
+    const metaFile = await uploadFile(`receipt_${ts}_meta.json`, new TextEncoder().encode(JSON.stringify(meta)), 'application/json');
+    state.receipts.unshift({ metaFileId: metaFile.id, imageFileId: imgFile.id, meta });
+    updateLibraryTab();
+    showSuccess(info.store ? `Saved! · ${info.store}` : 'Receipt saved to Google Drive!');
+    setTimeout(() => { state.processing = false; switchTab('library'); }, 2000);
+  } catch (e) {
+    if (e.message === 'AUTH_EXPIRED') { showError('Session expired. Please sign in again.'); signOut(); }
+    else { showError('Failed to process receipt. Please try again.'); }
+    state.processing = false; renderScan();
+  }
+}
+
+let currentStep = '';
+function setStep(s) { currentStep = s; document.getElementById('proc-step') && (document.getElementById('proc-step').textContent = s); }
+function showError(msg) { const el = document.getElementById('error-box'); if (el) { el.textContent = '⚠️ ' + msg; el.classList.remove('hidden'); } }
+function showSuccess(msg) {
+  const el = document.getElementById('scan-area');
+  if (el) el.innerHTML = `<div class="success-box"><div style="font-size:44px;margin-bottom:14px">✅</div><div style="color:#4a8a4a;font-size:16px">${msg}</div><div style="color:#2a3a2a;font-size:12px;margin-top:6px">Switching to library…</div></div>`;
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function dots() {
+  return `<span class="dots">${[0,1,2].map(i => `<span class="dot-anim" style="animation-delay:${i*0.18}s"></span>`).join('')}</span>`;
+}
+
+function render() {
+  const clientId = ls.get(K.clientId);
+  renderHeader();
+  if (!clientId) { renderSetup(); hideEl('tabs'); return; }
+  if (!state.token) { renderSignIn(); hideEl('tabs'); return; }
+  showEl('tabs'); updateLibraryTab();
+  if (state.tab === 'scan') renderScan();
+  else renderLibrary();
+}
+
+function renderHeader() {
+  const el = document.getElementById('header-actions');
+  if (state.token) {
+    el.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><div class="badge"><span class="dot"></span>Connected</div><button class="btn-signout" onclick="signOut()">Sign Out</button></div>`;
+  } else {
+    const cid = ls.get(K.clientId);
+    el.innerHTML = cid ? `<button class="btn-signin" onclick="signIn('${cid}')">Sign In →</button>` : '';
+  }
+}
+
+function renderSetup() {
+  const uri = getRedirectUri();
+  document.getElementById('content').innerHTML = `
+    <div class="setup">
+      <h2>Connect Google Drive</h2>
+      <p>Uses <code>drive.file</code> scope only — can <strong style="color:#c9b87a">never access your other Drive files</strong>.</p>
+      <div class="url-box">
+        <div class="url-label">⚠️ Add this exact URL in Google Cloud → Authorized JavaScript Origins</div>
+        <div class="url-value" id="redirect-uri">${uri}</div>
+        <button class="copy-btn" onclick="copyUrl()">📋 Copy URL</button>
+      </div>
+      <div class="checklist">
+        <div class="checklist-title">Setup checklist</div>
+        ${['Go to console.cloud.google.com','APIs &amp; Services → Library → Enable Google Drive API','Google Auth Platform → Clients → Create OAuth Client (Web Application)','Paste the URL above as Authorized JavaScript Origin','Google Auth Platform → Audience → Publish App','Copy your Client ID and paste below'].map((t,i)=>`<div class="checklist-item"><div class="step-num">${i+1}</div><div class="step-text">${t}</div></div>`).join('')}
+      </div>
+      <label class="field-label">Google OAuth Client ID</label>
+      <input class="field" id="client-id-input" placeholder="xxxxxxxxxx-xxxx.apps.googleusercontent.com" oninput="toggleBtn()" />
+      <button class="btn-primary" id="connect-btn" onclick="doConnect()" disabled>Sign In with Google →</button>
+    </div>`;
+}
+
+function copyUrl() {
+  const uri = getRedirectUri();
+  navigator.clipboard?.writeText(uri).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    if (btn) { btn.textContent = '✅ Copied!'; setTimeout(() => btn.textContent = '📋 Copy URL', 2000); }
+  });
+}
+
+function toggleBtn() {
+  const val = document.getElementById('client-id-input')?.value.trim();
+  const btn = document.getElementById('connect-btn');
+  if (btn) btn.disabled = !val;
+}
+
+function doConnect() {
+  const val = document.getElementById('client-id-input')?.value.trim();
+  if (val) signIn(val);
+}
+
+function renderSignIn() {
+  document.getElementById('content').innerHTML = `
+    <div class="signin-screen">
+      <div class="signin-icon">🔐</div>
+      <div class="signin-title">Sign in to access your receipts</div>
+      <div class="signin-sub">Only <code>drive.file</code> scope — no access to other Drive files</div>
+      <div class="signin-note">You'll be redirected to Google and back automatically</div>
+      <button class="btn-signin" onclick="signIn('${ls.get(K.clientId)}')">Sign in with Google →</button>
+      <div class="mt-16"><button class="btn-text" onclick="changeClientId()">Change Client ID</button></div>
+    </div>`;
+}
+
+function changeClientId() {
+  ls.del(K.clientId); ls.del(K.token); ls.del(K.exp); ls.del(K.folder);
+  state.token = null; state.folderId = null;
+  render();
+}
+
+function renderScan() {
+  const el = document.getElementById('content');
+  if (!el) return;
+  if (state.tab !== 'scan') return;
+  el.innerHTML = `
+    <div id="scan-area" style="animation:fadeIn 0.3s ease">
+      ${state.processing ? `
+        <div class="scan-area" style="cursor:default">
+          <div style="font-size:36px;margin-bottom:14px">🔍</div>
+          <div class="processing-step" id="proc-step">${currentStep}</div>
+          ${dots()}
+        </div>` : `
+        <div class="scan-area" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleFileInput(event)" />
+          <div class="scan-icon">📷</div>
+          <div class="scan-title">Drop receipt or tap to scan</div>
+          <div class="scan-sub">AI extracts all info · Saved to your Google Drive</div>
+        </div>`}
+    </div>
+    <div class="error-box hidden" id="error-box"></div>
+    <div class="security-box">
+      <div class="security-title">Security</div>
+      ${[['🔒','Only accesses your ReceiptVault folder — nothing else in Drive'],['👤','Your Google account authenticates every session'],['☁️','Encrypted in your personal Google Drive'],['🛡','AI only sees the image temporarily to extract info']].map(([i,t])=>`<div class="security-row"><span>${i}</span><span>${t}</span></div>`).join('')}
+    </div>`;
+}
+
+function renderLibrary() {
+  if (state.tab !== 'library') return;
+  const el = document.getElementById('content');
+  if (!el) return;
+  const search = document.getElementById('search-input')?.value.toLowerCase() || '';
+  const filtered = state.receipts.filter(r => {
+    if (!search) return true;
+    const info = r.meta?.info || {};
+    return info.store?.toLowerCase().includes(search) || info.date?.includes(search) ||
+      info.total?.includes(search) || info.items?.some(i => i.name?.toLowerCase().includes(search)) ||
+      info.warranty_items?.some(i => i.toLowerCase().includes(search));
+  });
+
+  el.innerHTML = `
+    <div style="animation:fadeIn 0.3s ease">
+      <input class="search-input" id="search-input" placeholder="Search stores, items, warranty products, dates…" oninput="renderLibrary()" value="${search}" />
+      ${state.loadingReceipts ? `<div class="p-50 text-center">${dots()}</div>` :
+        filtered.length === 0 ? `<div class="empty-state"><div style="font-size:36px;margin-bottom:10px">🗂</div><div>${state.receipts.length === 0 ? 'No receipts yet. Scan your first one!' : 'No results found.'}</div></div>` :
+        `<div class="receipt-list">${filtered.map(r => receiptCardHTML(r)).join('')}</div>`}
+    </div>`;
+}
+
+function receiptCardHTML(r) {
+  const info = r.meta?.info || {};
+  const age = r.meta?.uploadedAt ? Math.floor((Date.now() - r.meta.uploadedAt) / 86400000) : null;
+  const ageStr = age !== null ? ` · ${age === 0 ? 'Today' : age + 'd ago'}` : '';
+  return `
+    <button class="receipt-card" onclick='openReceipt(${JSON.stringify(JSON.stringify(r))})'>
+      <div class="card-row">
+        <div>
+          <div class="card-store">${esc(info.store || 'Unknown Store')}</div>
+          <div class="card-date">${esc(info.date || '—')}${ageStr}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="card-total">${esc(info.total || '—')}</div>
+          ${info.warranty_relevant ? '<div class="warranty-badge">🛡 Warranty</div>' : ''}
+        </div>
+      </div>
+      <div class="card-items">${info.items?.length || 0} items${info.warranty_items?.length > 0 ? ` · ${info.warranty_items.length} warranty-eligible` : ''}</div>
+    </button>`;
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openReceipt(jsonStr) {
+  const r = JSON.parse(jsonStr);
+  const info = r.meta?.info || {};
+  const modal = document.getElementById('modal-content');
+  modal.innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">${esc(info.store || 'Receipt')}</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-img-area"><div class="p-50 text-center" style="padding:20px 0">${dots()}</div></div>
+    <div class="meta-grid">
+      ${[['Date',info.date],['Total',info.total],['Receipt #',info.receipt_number],['Payment',info.payment_method]].filter(([,v])=>v).map(([l,v])=>`<div class="meta-cell"><div class="meta-label">${l}</div><div class="meta-value">${esc(v)}</div></div>`).join('')}
+    </div>
+    ${info.warranty_relevant && info.warranty_items?.length ? `
+    <div class="warranty-box">
+      <div class="warranty-title">🛡 Warranty-Eligible Items</div>
+      ${info.warranty_items.map(i=>`<div class="warranty-item">${esc(i)}</div>`).join('')}
+    </div>` : ''}
+    ${info.items?.length ? `
+    <div style="margin-bottom:18px">
+      <div class="items-title">All Items</div>
+      ${info.items.map(i=>`<div class="item-row"><span>${esc(i.name)}</span><span class="item-price">${esc(i.price)}</span></div>`).join('')}
+    </div>` : ''}
+    ${info.notes ? `<div style="color:#4a4030;font-size:12px;font-style:italic;margin-bottom:18px">${esc(info.notes)}</div>` : ''}
+    <div class="drive-note">☁️ Stored securely in your Google Drive · ReceiptVault folder</div>
+    <button class="btn-delete" onclick="deleteReceipt('${r.metaFileId}','${r.imageFileId}')">Delete from Google Drive</button>`;
+
+  document.getElementById('modal-overlay').classList.remove('hidden');
+
+  // Load image async
+  if (r.imageFileId && state.token) {
+    fetch(`https://www.googleapis.com/drive/v3/files/${r.imageFileId}?alt=media`, { headers: { Authorization: `Bearer ${state.token}` } })
+      .then(res => res.blob())
+      .then(blob => new Promise((res, rej) => { const rd = new FileReader(); rd.onload = () => res(rd.result); rd.onerror = rej; rd.readAsDataURL(blob); }))
+      .then(dataUrl => {
+        const imgArea = document.getElementById('modal-img-area');
+        if (imgArea) imgArea.innerHTML = `<img class="modal-img" src="${dataUrl}" alt="Receipt" />`;
+      }).catch(() => { const imgArea = document.getElementById('modal-img-area'); if (imgArea) imgArea.innerHTML = ''; });
+  } else {
+    document.getElementById('modal-img-area').innerHTML = '';
+  }
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+
+function switchTab(tab) {
+  state.tab = tab;
+  document.getElementById('tab-scan').classList.toggle('active', tab === 'scan');
+  document.getElementById('tab-library').classList.toggle('active', tab === 'library');
+  if (tab === 'scan') renderScan();
+  else renderLibrary();
+}
+
+function updateLibraryTab() {
+  const el = document.getElementById('tab-library');
+  if (el) el.textContent = `📁 Library${state.receipts.length ? ` (${state.receipts.length})` : ''}`;
+}
+
+function showEl(id) { document.getElementById(id)?.classList.remove('hidden'); }
+function hideEl(id) { document.getElementById(id)?.classList.add('hidden'); }
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone')?.classList.remove('drag');
+  const f = e.dataTransfer.files?.[0];
+  if (f) processFile(f);
+}
+function handleFileInput(e) { const f = e.target.files?.[0]; if (f) processFile(f); }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+async function init() {
+  // Check for OAuth token in URL hash
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    const token = params.get('access_token');
+    const expiresIn = parseInt(params.get('expires_in')) || 3600;
+    if (token) {
+      ls.set(K.token, token);
+      ls.set(K.exp, String(Date.now() + expiresIn * 1000));
+      state.token = token;
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  } else if (isTokenValid()) {
+    state.token = ls.get(K.token);
+  }
+
+  render();
+
+  // Init Drive folder if signed in
+  if (state.token) {
+    try {
+      const savedFolder = ls.get(K.folder);
+      if (savedFolder) {
+        state.folderId = savedFolder;
+      } else {
+        state.folderId = await getOrCreateFolder();
+        ls.set(K.folder, state.folderId);
+      }
+      await loadReceipts();
+    } catch (e) {
+      if (e.message === 'AUTH_EXPIRED') signOut();
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>
